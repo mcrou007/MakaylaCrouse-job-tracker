@@ -1,18 +1,11 @@
 -- =====================================================================
 -- schema.sql — Job Application Tracker
--- Creates the job_tracker database, all 4 tables, indexes, and sample data.
--- Run in MySQL Workbench (File > Open SQL Script > lightning bolt)
--- or from a terminal:  mysql -u root -p < schema.sql
--- WARNING: this drops and recreates job_tracker, erasing existing data.
--- =====================================================================
 
 DROP DATABASE IF EXISTS job_tracker;
 CREATE DATABASE job_tracker;
 USE job_tracker;
 
--- ---------------------------------------------------------------------
--- companies
--- ---------------------------------------------------------------------
+
 CREATE TABLE companies (
     company_id   INT PRIMARY KEY AUTO_INCREMENT,
     company_name VARCHAR(100) NOT NULL,
@@ -24,9 +17,7 @@ CREATE TABLE companies (
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ---------------------------------------------------------------------
--- jobs  (requirements = JSON array of skills, used by Job Match)
--- ---------------------------------------------------------------------
+
 CREATE TABLE jobs (
     job_id       INT PRIMARY KEY AUTO_INCREMENT,
     company_id   INT NOT NULL,
@@ -45,9 +36,7 @@ CREATE TABLE jobs (
         CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_max >= salary_min)
 );
 
--- ---------------------------------------------------------------------
--- applications  (interview_data = JSON object with interview details)
--- ---------------------------------------------------------------------
+
 CREATE TABLE applications (
     application_id    INT PRIMARY KEY AUTO_INCREMENT,
     job_id            INT NOT NULL,
@@ -63,9 +52,7 @@ CREATE TABLE applications (
         ON DELETE CASCADE
 );
 
--- ---------------------------------------------------------------------
--- contacts
--- ---------------------------------------------------------------------
+
 CREATE TABLE contacts (
     contact_id   INT PRIMARY KEY AUTO_INCREMENT,
     company_id   INT NOT NULL,
@@ -81,17 +68,13 @@ CREATE TABLE contacts (
         ON DELETE CASCADE
 );
 
--- ---------------------------------------------------------------------
--- Indexes (from Assignment 3) for common searches
--- ---------------------------------------------------------------------
+
 CREATE INDEX idx_company_industry ON companies(industry);
 CREATE INDEX idx_job_title        ON jobs(job_title);
 CREATE INDEX idx_company_type     ON jobs(company_id, job_type);
 CREATE INDEX idx_app_status       ON applications(status);
 
--- ---------------------------------------------------------------------
--- Sample data
--- ---------------------------------------------------------------------
+
 INSERT INTO companies (company_name, industry, website, city, state, notes) VALUES
 ('Tech Solutions Inc',  'Technology',      'https://www.techsolutions.com',      'Miami',         'Florida',       'Local company, hybrid schedule.'),
 ('Data Analytics Corp', 'Data Science',    'https://www.dataanalytics.com',      'Austin',        'Texas',         NULL),
@@ -99,30 +82,48 @@ INSERT INTO companies (company_name, industry, website, city, state, notes) VALU
 ('Digital Innovations', 'Software',        'https://www.digitalinnovations.com', 'San Francisco', 'California',    NULL),
 ('Smart Tech Group',    'AI/ML',           'https://www.smarttech.com',          'Boston',        'Massachusetts', 'Met recruiter at career fair.');
 
+-- requirements follows the structure from Assignment 7.
+-- Job Match compares your skills against required_skills.
 INSERT INTO jobs (company_id, job_title, job_type, salary_min, salary_max, job_url, date_posted, requirements) VALUES
-(1, 'Software Developer',     'Full-time',  70000,  90000, 'https://www.techsolutions.com/careers/101',      '2025-01-15', '["Python", "SQL", "Flask", "Git"]'),
-(1, 'Database Administrator', 'Full-time',  75000,  95000, 'https://www.techsolutions.com/careers/102',      '2025-01-10', '["SQL", "MySQL", "Linux", "Backup and Recovery"]'),
-(1, 'Technical Writer',       'Contract',   55000,  75000, NULL,                                            '2025-01-12', '["Writing", "Markdown", "Git"]'),
-(2, 'Data Analyst',           'Full-time',  65000,  85000, 'https://www.dataanalytics.com/jobs/data-analyst', '2025-01-12', '["SQL", "Python", "Excel", "Tableau"]'),
-(2, 'Data Scientist',         'Full-time',  85000, 110000, NULL,                                            '2025-01-07', '["Python", "SQL", "Machine Learning", "Statistics"]'),
-(2, 'Intern - Data',          'Internship', 30000,  40000, NULL,                                            '2025-01-13', '["Excel", "SQL"]'),
-(3, 'Cloud Engineer',         'Full-time',  80000, 100000, 'https://www.cloudsystems.com/jobs/cloud-eng',    '2025-01-08', '["AWS", "Linux", "Python", "Docker"]'),
-(3, 'DevOps Engineer',        'Full-time',  80000, 105000, NULL,                                            '2025-01-08', '["Docker", "Kubernetes", "Linux", "Git"]'),
-(4, 'Junior Developer',       'Full-time',  55000,  70000, NULL,                                            '2025-01-14', '["JavaScript", "HTML", "CSS", "Git"]'),
-(4, 'Senior Developer',       'Full-time',  95000, 120000, NULL,                                            '2025-01-14', '["Python", "JavaScript", "SQL", "System Design"]'),
-(4, 'Intern - Development',   'Part-time',  32000,  42000, NULL,                                            '2025-01-14', '["Python", "HTML", "CSS"]'),
-(5, 'ML Engineer',            'Full-time',  90000, 115000, 'https://www.smarttech.com/careers/ml-engineer',  '2025-01-11', '["Python", "Machine Learning", "TensorFlow", "SQL"]');
+(1, 'Software Developer', 'Full-time', 70000, 90000, 'https://www.techsolutions.com/careers/101', '2025-01-15',
+    '{"required_skills": ["Python", "SQL", "Git"], "preferred_skills": ["Flask", "Docker", "AWS"], "education": "Bachelor in CS or related field", "experience_years": 2, "remote_option": true}'),
+(1, 'Database Administrator', 'Full-time', 75000, 95000, 'https://www.techsolutions.com/careers/102', '2025-01-10',
+    '{"required_skills": ["SQL", "MySQL", "Linux"], "preferred_skills": ["Backup and Recovery", "Python"], "education": "Bachelor in CS or related field", "experience_years": 3, "remote_option": false}'),
+(1, 'Technical Writer', 'Contract', 55000, 75000, NULL, '2025-01-12',
+    '{"required_skills": ["Writing", "Markdown"], "preferred_skills": ["Git"], "education": "Bachelor degree", "experience_years": 1, "remote_option": true}'),
+(2, 'Data Analyst', 'Full-time', 65000, 85000, 'https://www.dataanalytics.com/jobs/data-analyst', '2025-01-12',
+    '{"required_skills": ["SQL", "Excel", "Tableau"], "preferred_skills": ["Python", "R"], "education": "Bachelor degree", "experience_years": 1, "remote_option": false}'),
+(2, 'Data Scientist', 'Full-time', 85000, 110000, NULL, '2025-01-07',
+    '{"required_skills": ["Python", "SQL", "Machine Learning", "Statistics"], "preferred_skills": ["R", "Tableau"], "education": "Master in Data Science or related field", "experience_years": 3, "remote_option": true}'),
+(2, 'Intern - Data', 'Internship', 30000, 40000, NULL, '2025-01-13',
+    '{"required_skills": ["Excel", "SQL"], "preferred_skills": ["Python"], "education": "Currently enrolled in college", "experience_years": 0, "remote_option": false}'),
+(3, 'Cloud Engineer', 'Full-time', 80000, 100000, 'https://www.cloudsystems.com/jobs/cloud-eng', '2025-01-08',
+    '{"required_skills": ["AWS", "Linux", "Python"], "preferred_skills": ["Docker", "Terraform"], "education": "Bachelor in CS or related field", "experience_years": 3, "remote_option": true}'),
+(3, 'DevOps Engineer', 'Full-time', 80000, 105000, NULL, '2025-01-08',
+    '{"required_skills": ["Docker", "Kubernetes", "Linux", "Git"], "preferred_skills": ["AWS", "Python"], "education": "Bachelor in CS or related field", "experience_years": 3, "remote_option": true}'),
+(4, 'Junior Developer', 'Full-time', 55000, 70000, NULL, '2025-01-14',
+    '{"required_skills": ["JavaScript", "HTML", "CSS"], "preferred_skills": ["Git", "React"], "education": "Bachelor degree", "experience_years": 0, "remote_option": false}'),
+(4, 'Senior Developer', 'Full-time', 95000, 120000, NULL, '2025-01-14',
+    '{"required_skills": ["Python", "JavaScript", "SQL"], "preferred_skills": ["System Design", "AWS"], "education": "Bachelor in CS or related field", "experience_years": 5, "remote_option": true}'),
+(4, 'Intern - Development', 'Part-time', 32000, 42000, NULL, '2025-01-14',
+    '{"required_skills": ["Python", "HTML", "CSS"], "preferred_skills": ["Flask", "Git"], "education": "Currently enrolled in college", "experience_years": 0, "remote_option": false}'),
+(5, 'ML Engineer', 'Full-time', 90000, 115000, 'https://www.smarttech.com/careers/ml-engineer', '2025-01-11',
+    '{"required_skills": ["Python", "Machine Learning", "SQL"], "preferred_skills": ["TensorFlow", "Docker"], "education": "Master in CS or related field", "experience_years": 3, "remote_option": true}');
 
+-- interview_data follows the structure from Assignment 7.
 INSERT INTO applications (job_id, application_date, status, resume_version, cover_letter_sent, interview_data) VALUES
-(1,  '2025-01-16', 'Interview', 'v2.1', TRUE,
-     '{"round": 2, "type": "Technical", "date": "2025-01-28 14:00", "interviewer": "Sarah Johnson", "notes": "Live coding in Python"}'),
-(4,  '2025-01-13', 'Screening', 'v2.1', TRUE,
-     '{"round": 1, "type": "Phone", "date": "2025-01-20 10:30", "interviewer": "Michael Chen"}'),
-(7,  '2025-01-09', 'Rejected',  'v2.0', FALSE, NULL),
-(9,  '2025-01-15', 'Applied',   'v2.1', TRUE,  NULL),
-(12, '2025-01-12', 'Offer',     'v2.1', TRUE,
-     '{"round": 3, "type": "Final", "date": "2025-01-24 13:00", "interviewer": "Lisa Garcia", "notes": "Offer received 2025-01-30"}'),
-(11, '2025-01-18', 'Withdrawn', 'v2.2', FALSE, NULL);
+(1, '2025-01-16', 'Interview', 'v2.1', TRUE,
+    '{"interview_rounds": 2, "interviewers": ["Sarah Johnson", "Mike Chen"], "technical_questions": ["SQL joins", "Python basics", "API design"], "feedback": "Strong technical skills, good communication", "next_steps": "Final round scheduled"}'),
+(4, '2025-01-13', 'Screening', 'v2.1', TRUE,
+    '{"interview_rounds": 1, "interviewers": ["Michael Chen"], "technical_questions": ["Excel pivot tables"], "feedback": "Friendly phone screen", "next_steps": "Waiting to hear back"}'),
+(7, '2025-01-09', 'Rejected', 'v2.0', FALSE,
+    '{"interview_rounds": 1, "interviewers": ["Emily Williams"], "technical_questions": ["Database normalization", "Transaction isolation"], "feedback": "Needs more experience with cloud platforms"}'),
+(9, '2025-01-15', 'Applied', 'v2.1', TRUE,
+    NULL),
+(12, '2025-01-12', 'Offer', 'v2.1', TRUE,
+    '{"interview_rounds": 3, "interviewers": ["Lisa Garcia"], "technical_questions": ["Model evaluation", "Python data structures"], "feedback": "Great culture fit", "next_steps": "Offer extended!"}'),
+(11, '2025-01-18', 'Withdrawn', 'v2.2', FALSE,
+    NULL);
 
 INSERT INTO contacts (company_id, contact_name, title, email, phone, linkedin_url, notes) VALUES
 (1, 'Sarah Johnson',   'HR Manager',          'sjohnson@techsolutions.com', '305-555-0101', 'https://www.linkedin.com/in/sarahjohnson', 'Scheduled my technical interview.'),
