@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import delete_button, status_pill, skill_chips %}
+{% block title %}Application: {{ application.job_title }}{% endblock %}
+{% block content %}
+{% set iv = application.interview_data %}
+<div class="page-head">
+  <div>
+    <div class="crumbs"><a href="{{ url_for('applications') }}">Applications</a> / #{{ application.application_id }}</div>
+    <h1>{{ application.job_title }}</h1>
+    <p><a href="{{ url_for('company_detail', company_id=application.company_id) }}">{{ application.company_name }}</a> · {{ status_pill(application.status) }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('edit_application', application_id=application.application_id) }}">Edit</a>
+    {{ delete_button(url_for('delete_application', application_id=application.application_id),
+         'Delete your application to ' ~ application.job_title ~ ' at ' ~ application.company_name ~ '?') }}
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card card-pad">
+    <h2 style="margin-bottom:14px">Application</h2>
+    <dl class="details">
+      <dt>Job</dt><dd><a href="{{ url_for('job_detail', job_id=application.job_id) }}">{{ application.job_title }}</a></dd>
+      <dt>Company</dt><dd>{{ application.company_name }}</dd>
+      <dt>Applied on</dt><dd>{{ application.application_date|nice_date }}</dd>
+      <dt>Status</dt><dd>{{ status_pill(application.status) }}</dd>
+      <dt>Resume version</dt><dd>{{ application.resume_version or '—' }}</dd>
+      <dt>Cover letter</dt><dd>{{ 'Sent' if application.cover_letter_sent else 'Not sent' }}</dd>
+    </dl>
+  </section>
+
+  <section class="card card-pad">
+    <h2 style="margin-bottom:14px">Interview details</h2>
+    {% if iv %}
+    <dl class="details">
+      <dt>Rounds</dt><dd>{{ iv.get('interview_rounds', '—') }}</dd>
+      <dt>Interviewers</dt><dd>{{ skill_chips(iv.get('interviewers')) }}</dd>
+      <dt>Questions</dt><dd>{{ skill_chips(iv.get('technical_questions'), 'chip-soft') }}</dd>
+      <dt>Feedback</dt><dd class="notes">{{ iv.get('feedback') or '—' }}</dd>
+      <dt>Next steps</dt><dd>{{ iv.get('next_steps') or '—' }}</dd>
+      <dt>Stored JSON</dt><dd><div class="json-block">{{ iv|tojson(indent=2) }}</div></dd>
+    </dl>
+    {% else %}
+    <p class="muted">No interview details yet. <a href="{{ url_for('edit_application', application_id=application.application_id) }}">Add them</a> when you hear back.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

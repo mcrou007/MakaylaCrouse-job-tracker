@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import delete_button %}
+{% block title %}Contacts{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Contacts</h1><p>{{ contacts|length }} {{ 'person' if contacts|length == 1 else 'people' }} at the companies you're tracking.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('add_contact') }}">+ Add contact</a>
+</div>
+
+<section class="card">
+  {% if contacts %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+    <tbody>
+    {% for ct in contacts %}
+      <tr>
+        <td class="title-cell"><a href="{{ url_for('contact_detail', contact_id=ct.contact_id) }}">{{ ct.contact_name }}</a>{% if ct.title %}<span class="sub">{{ ct.title }}</span>{% endif %}</td>
+        <td><a href="{{ url_for('company_detail', company_id=ct.company_id) }}">{{ ct.company_name }}</a></td>
+        <td>{% if ct.email %}<a href="mailto:{{ ct.email }}">{{ ct.email }}</a>{% else %}—{% endif %}</td>
+        <td>{{ ct.phone or '—' }}</td>
+        <td class="row-actions">
+          <a class="btn btn-sm" href="{{ url_for('edit_contact', contact_id=ct.contact_id) }}">Edit</a>
+          {{ delete_button(url_for('delete_contact', contact_id=ct.contact_id), 'Delete ' ~ ct.contact_name ~ '?', small=True) }}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="empty">No contacts yet. <a href="{{ url_for('add_contact') }}">Add your first contact.</a></p>
+  {% endif %}
+</section>
+{% endblock %}

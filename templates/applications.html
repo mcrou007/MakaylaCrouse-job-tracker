@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import delete_button, status_pill %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Applications</h1><p>{{ applications|length }} application{{ '' if applications|length == 1 else 's' }}{{ ' with status ' ~ current_status if current_status }}.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('add_application') }}">+ Add application</a>
+</div>
+
+<section class="card">
+  <nav class="tabs" aria-label="Filter by status">
+    <a class="tab {{ 'active' if not current_status }}" href="{{ url_for('applications') }}">All</a>
+    {% for s in statuses %}<a class="tab {{ 'active' if current_status == s }}" href="{{ url_for('applications', status=s) }}">{{ s }}</a>{% endfor %}
+  </nav>
+
+  {% if applications %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Job</th><th>Applied</th><th>Status</th><th>Resume</th><th>Cover letter</th><th>Interview rounds</th><th></th></tr></thead>
+    <tbody>
+    {% for a in applications %}
+      <tr>
+        <td class="title-cell"><a href="{{ url_for('application_detail', application_id=a.application_id) }}">{{ a.job_title }}</a><span class="sub">{{ a.company_name }}</span></td>
+        <td class="nowrap">{{ a.application_date|nice_date }}</td>
+        <td>{{ status_pill(a.status) }}</td>
+        <td>{{ a.resume_version or '—' }}</td>
+        <td>{{ 'Sent' if a.cover_letter_sent else 'No' }}</td>
+        <td>{{ a.interview_data.get('interview_rounds', '—') }}</td>
+        <td class="row-actions">
+          <a class="btn btn-sm" href="{{ url_for('edit_application', application_id=a.application_id) }}">Edit</a>
+          {{ delete_button(url_for('delete_application', application_id=a.application_id),
+               'Delete your application to ' ~ a.job_title ~ ' at ' ~ a.company_name ~ '?', small=True) }}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="empty">No applications{{ ' with this status' if current_status }}. <a href="{{ url_for('add_application') }}">Add one.</a></p>
+  {% endif %}
+</section>
+{% endblock %}

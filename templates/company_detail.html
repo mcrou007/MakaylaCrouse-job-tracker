@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import delete_button, skill_chips %}
+{% block title %}{{ company.company_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="crumbs"><a href="{{ url_for('companies') }}">Companies</a> / {{ company.company_name }}</div>
+    <h1>{{ company.company_name }}</h1>
+    <p>{{ [company.industry, [company.city, company.state]|select|join(', ')]|select|join(' · ') }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('edit_company', company_id=company.company_id) }}">Edit</a>
+    {{ delete_button(url_for('delete_company', company_id=company.company_id),
+         'Delete ' ~ company.company_name ~ '? This also deletes its ' ~ jobs|length ~ ' job(s), their applications, and its ' ~ contacts|length ~ ' contact(s).') }}
+  </div>
+</div>
+
+<section class="card card-pad">
+  <dl class="details">
+    <dt>Industry</dt><dd>{{ company.industry or '—' }}</dd>
+    <dt>Website</dt><dd>{% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}—{% endif %}</dd>
+    <dt>Location</dt><dd>{{ [company.city, company.state]|select|join(', ') or '—' }}</dd>
+    <dt>Notes</dt><dd class="notes">{{ company.notes or '—' }}</dd>
+    <dt>Added</dt><dd>{{ company.created_at|nice_date }}</dd>
+  </dl>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Jobs ({{ jobs|length }})</h2><a class="btn btn-sm btn-primary" href="{{ url_for('add_job', company_id=company.company_id) }}">+ Add job</a></div>
+  {% if jobs %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Title</th><th>Type</th><th>Salary</th><th>Required skills</th></tr></thead>
+    <tbody>
+    {% for j in jobs %}
+      <tr>
+        <td class="title-cell"><a href="{{ url_for('job_detail', job_id=j.job_id) }}">{{ j.job_title }}</a></td>
+        <td><span class="pill type-pill">{{ j.job_type }}</span></td>
+        <td class="nowrap">{{ j|salary_range }}</td>
+        <td>{{ skill_chips(j.requirements.get('required_skills')) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">No jobs at this company yet.</p>{% endif %}
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Contacts ({{ contacts|length }})</h2><a class="btn btn-sm btn-primary" href="{{ url_for('add_contact', company_id=company.company_id) }}">+ Add contact</a></div>
+  {% if contacts %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone</th></tr></thead>
+    <tbody>
+    {% for ct in contacts %}
+      <tr>
+        <td class="title-cell"><a href="{{ url_for('contact_detail', contact_id=ct.contact_id) }}">{{ ct.contact_name }}</a></td>
+        <td>{{ ct.title or '—' }}</td>
+        <td>{% if ct.email %}<a href="mailto:{{ ct.email }}">{{ ct.email }}</a>{% else %}—{% endif %}</td>
+        <td>{{ ct.phone or '—' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">No contacts at this company yet.</p>{% endif %}
+</section>
+{% endblock %}

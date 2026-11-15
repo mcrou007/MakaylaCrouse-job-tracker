@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_pill %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p>An overview of your job search.</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('job_match') }}">Find matching jobs</a>
+    <a class="btn btn-primary" href="{{ url_for('add_application') }}">+ Add application</a>
+  </div>
+</div>
+
+<section class="stats">
+  <div class="card stat"><span class="stat-label">Companies</span><span class="stat-value">{{ stats.counts.companies }}</span><a class="stat-link" href="{{ url_for('companies') }}">View companies →</a></div>
+  <div class="card stat"><span class="stat-label">Jobs</span><span class="stat-value">{{ stats.counts.jobs }}</span><a class="stat-link" href="{{ url_for('jobs') }}">View jobs →</a></div>
+  <div class="card stat"><span class="stat-label">Applications</span><span class="stat-value">{{ stats.counts.applications }}</span><a class="stat-link" href="{{ url_for('applications') }}">View applications →</a></div>
+  <div class="card stat"><span class="stat-label">Contacts</span><span class="stat-value">{{ stats.counts.contacts }}</span><a class="stat-link" href="{{ url_for('contacts') }}">View contacts →</a></div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2>Applications by status</h2></div>
+    {% set top = stats.status_counts|map(attribute='count')|max %}
+    <div class="bars">
+      {% for row in stats.status_counts %}
+      <div class="bar-row">
+        <a href="{{ url_for('applications', status=row.status) }}">{{ row.status }}</a>
+        <div class="bar-track"><div class="bar-fill st-{{ row.status }}" style="width: {{ (row.count * 100 / top) if top else 0 }}%"></div></div>
+        <span class="num">{{ row.count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Response rate</h2></div>
+    <div class="rate"><strong>{{ stats.response_rate }}%</strong><span class="muted">of applications got past “Applied”</span></div>
+    <div class="bars">
+      <div class="bar-row">
+        <span>Responded</span>
+        <div class="bar-track"><div class="bar-fill st-Offer" style="width: {{ stats.response_rate }}%"></div></div>
+        <span class="num">{{ stats.responded }}</span>
+      </div>
+      <div class="bar-row">
+        <span>Waiting</span>
+        <div class="bar-track"><div class="bar-fill st-Applied" style="width: {{ 100 - stats.response_rate if stats.total_applications else 0 }}%"></div></div>
+        <span class="num">{{ stats.total_applications - stats.responded }}</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Recent applications</h2><a href="{{ url_for('applications') }}">See all</a></div>
+  {% if stats.recent %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Job</th><th>Applied</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for a in stats.recent %}
+      <tr>
+        <td class="title-cell"><a href="{{ url_for('job_detail', job_id=a.job_id) }}">{{ a.job_title }}</a><span class="sub">{{ a.company_name }}</span></td>
+        <td class="nowrap">{{ a.application_date|nice_date }}</td>
+        <td>{{ status_pill(a.status) }}</td>
+        <td class="row-actions"><a class="btn btn-sm" href="{{ url_for('application_detail', application_id=a.application_id) }}">View</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">No applications yet.</p>{% endif %}
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2>Jobs by company</h2></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Company</th><th class="num">Jobs</th></tr></thead>
+      <tbody>
+      {% for c in stats.jobs_by_company %}
+        <tr><td><a href="{{ url_for('company_detail', company_id=c.company_id) }}">{{ c.company_name }}</a></td><td class="num">{{ c.job_count }}</td></tr>
+      {% else %}<tr><td colspan="2" class="empty">No companies yet.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Average salary by industry</h2></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Industry</th><th class="num">Avg min</th><th class="num">Avg max</th></tr></thead>
+      <tbody>
+      {% for row in stats.salary_by_industry %}
+        <tr><td>{{ row.industry }}</td><td class="num">{{ row.avg_min|money }}</td><td class="num">{{ row.avg_max|money }}</td></tr>
+      {% else %}<tr><td colspan="3" class="empty">No salary data yet.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </section>
+</div>
+{% endblock %}

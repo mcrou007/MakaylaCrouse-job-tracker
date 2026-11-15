@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Database error{% endblock %}
+{% block content %}
+<section class="card card-pad">
+  <h1>Can't reach the database</h1>
+  <p style="margin:8px 0">MySQL returned: <code>{{ error.msg if error.msg else error }}</code></p>
+  <ul class="muted">
+    <li>Make sure MySQL is running.</li>
+    <li>Check that <code>DB_PASSWORD</code> in your <code>.env</code> file is your MySQL root password.</li>
+    <li>Make sure you ran <code>schema.sql</code> so the <code>job_tracker</code> database exists.</li>
+  </ul>
+</section>
+{% endblock %}

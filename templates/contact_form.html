@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as f %}
+{% block title %}{{ 'Edit ' ~ contact.contact_name if contact else 'Add contact' }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="crumbs"><a href="{{ url_for('contacts') }}">Contacts</a> / {{ 'Edit' if contact else 'Add' }}</div>
+    <h1>{{ 'Edit ' ~ contact.contact_name if contact else 'Add a contact' }}</h1>
+  </div>
+</div>
+
+{% if not company_options %}
+<section class="card card-pad"><p>You need a company before you can add a contact. <a href="{{ url_for('add_company') }}">Add a company first.</a></p></section>
+{% else %}
+<form class="card card-pad form" method="post" novalidate>
+  <div class="fields">
+    {{ f.input('contact_name', 'Name', values, errors, required=True, placeholder='e.g. Sarah Johnson') }}
+    {{ f.select('company_id', 'Company', company_options, values, errors, required=True, placeholder='Choose a company') }}
+    {{ f.input('title', 'Title', values, errors, placeholder='e.g. HR Manager') }}
+    {{ f.input('email', 'Email', values, errors, type='email', placeholder='name@company.com') }}
+    {{ f.input('phone', 'Phone', values, errors, placeholder='305-555-0101') }}
+    {{ f.input('linkedin_url', 'LinkedIn URL', values, errors, placeholder='linkedin.com/in/name') }}
+    {{ f.textarea('notes', 'Notes', values, errors, placeholder='How you met, what you talked about') }}
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{ 'Save changes' if contact else 'Add contact' }}</button>
+    <a class="btn" href="{{ url_for('contact_detail', contact_id=contact.contact_id) if contact else url_for('contacts') }}">Cancel</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as f %}
+{% block title %}{{ 'Edit application' if application else 'Add application' }}{% endblock %}
+{% block content %}
+{# Flatten the interview_data JSON into simple form values #}
+{% set iv = values.get('interview_data') or {} %}
+{% set ivv = {
+  'interview_rounds': iv.get('interview_rounds'),
+  'interviewers': (iv.get('interviewers') or [])|join(', '),
+  'technical_questions': (iv.get('technical_questions') or [])|join(', '),
+  'feedback': iv.get('feedback'),
+  'next_steps': iv.get('next_steps'),
+} %}
+{% if request.method == 'POST' %}{% set ivv = request.form %}{% endif %}
+
+<div class="page-head">
+  <div>
+    <div class="crumbs"><a href="{{ url_for('applications') }}">Applications</a> / {{ 'Edit' if application else 'Add' }}</div>
+    <h1>{{ 'Edit application' if application else 'Add an application' }}</h1>
+    {% if application %}<p>{{ application.job_title }} at {{ application.company_name }}</p>{% endif %}
+  </div>
+</div>
+
+{% if not job_options %}
+<section class="card card-pad"><p>You need a job before you can log an application. <a href="{{ url_for('add_job') }}">Add a job first.</a></p></section>
+{% else %}
+<form class="card card-pad form" method="post" novalidate>
+  <div class="form-section">
+    <h2>Application</h2>
+    <div class="fields">
+      {{ f.select('job_id', 'Job', job_options, values, errors, required=True, placeholder='Choose a job') }}
+      {{ f.input('application_date', 'Application date', values, errors, type='date', required=True) }}
+      {{ f.select('status', 'Status', status_options, values, errors, required=True) }}
+      {{ f.input('resume_version', 'Resume version', values, errors, placeholder='e.g. v2.1') }}
+      <div class="field">
+        <label>&nbsp;</label>
+        {% set sent = (request.form.get('cover_letter_sent') == 'on') if request.method == 'POST' else values.get('cover_letter_sent') %}
+        <label class="check"><input type="checkbox" name="cover_letter_sent" {{ 'checked' if sent }}> Cover letter sent</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Interview details</h2>
+    <p>Optional. Saved to the <code>interview_data</code> JSON column.</p>
+    <div class="fields">
+      {{ f.input('interview_rounds', 'Interview rounds', ivv, errors, type='number', extra='min="0" max="20"') }}
+      {{ f.input('interviewers', 'Interviewers', ivv, errors, placeholder='Sarah Johnson, Mike Chen', hint='Separate names with commas.') }}
+      {{ f.input('technical_questions', 'Questions asked', ivv, errors, wide=True, placeholder='SQL joins, Python basics', hint='Separate questions with commas.') }}
+      {{ f.textarea('feedback', 'Feedback', ivv, errors) }}
+      {{ f.input('next_steps', 'Next steps', ivv, errors, wide=True, placeholder='e.g. Final round scheduled') }}
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{ 'Save changes' if application else 'Add application' }}</button>
+    <a class="btn" href="{{ url_for('application_detail', application_id=application.application_id) if application else url_for('applications') }}">Cancel</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

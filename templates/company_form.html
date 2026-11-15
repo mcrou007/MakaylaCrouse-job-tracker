@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as f %}
+{% block title %}{{ 'Edit ' ~ company.company_name if company else 'Add company' }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="crumbs"><a href="{{ url_for('companies') }}">Companies</a> / {{ 'Edit' if company else 'Add' }}</div>
+    <h1>{{ 'Edit ' ~ company.company_name if company else 'Add a company' }}</h1>
+  </div>
+</div>
+
+<form class="card card-pad form" method="post" novalidate>
+  <div class="form-section">
+    <div class="fields">
+      {{ f.input('company_name', 'Company name', values, errors, required=True, placeholder='e.g. Tech Solutions Inc') }}
+      {{ f.input('industry', 'Industry', values, errors, placeholder='e.g. Technology') }}
+      {{ f.input('website', 'Website', values, errors, placeholder='www.example.com') }}
+      {{ f.input('city', 'City', values, errors) }}
+      {{ f.input('state', 'State', values, errors) }}
+      {{ f.textarea('notes', 'Notes', values, errors, placeholder='Anything worth remembering about this company') }}
+    </div>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{ 'Save changes' if company else 'Add company' }}</button>
+    <a class="btn" href="{{ url_for('company_detail', company_id=company.company_id) if company else url_for('companies') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

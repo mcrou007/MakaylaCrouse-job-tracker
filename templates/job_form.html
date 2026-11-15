@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as f %}
+{% block title %}{{ 'Edit ' ~ job.job_title if job else 'Add job' }}{% endblock %}
+{% block content %}
+{# Flatten the requirements JSON into simple form values #}
+{% set req = values.get('requirements') or {} %}
+{% set rv = {
+  'required_skills': (req.get('required_skills') or [])|join(', '),
+  'preferred_skills': (req.get('preferred_skills') or [])|join(', '),
+  'education': req.get('education'),
+  'experience_years': req.get('experience_years'),
+} %}
+{% if request.method == 'POST' %}{% set rv = request.form %}{% endif %}
+
+<div class="page-head">
+  <div>
+    <div class="crumbs"><a href="{{ url_for('jobs') }}">Jobs</a> / {{ 'Edit' if job else 'Add' }}</div>
+    <h1>{{ 'Edit ' ~ job.job_title if job else 'Add a job' }}</h1>
+  </div>
+</div>
+
+{% if not companies %}
+<section class="card card-pad"><p>You need a company before you can add a job. <a href="{{ url_for('add_company') }}">Add a company first.</a></p></section>
+{% else %}
+<form class="card card-pad form" method="post" novalidate>
+  <div class="form-section">
+    <h2>Posting</h2>
+    <div class="fields">
+      {{ f.select('company_id', 'Company', company_options, values, errors, required=True, placeholder='Choose a company') }}
+      {{ f.input('job_title', 'Job title', values, errors, required=True, placeholder='e.g. Software Developer') }}
+      {{ f.select('job_type', 'Job type', type_options, values, errors, required=True) }}
+      {{ f.input('salary_min', 'Minimum salary', values, errors, type='number', placeholder='70000', extra='min="0" step="1000"') }}
+      {{ f.input('salary_max', 'Maximum salary', values, errors, type='number', placeholder='90000', extra='min="0" step="1000"') }}
+      {{ f.input('date_posted', 'Date posted', values, errors, type='date') }}
+      {{ f.input('job_url', 'Posting URL', values, errors, wide=True, placeholder='https://company.com/careers/123') }}
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Requirements</h2>
+    <p>Saved to the <code>requirements</code> JSON column. Job Match compares your skills against the required skills.</p>
+    <div class="fields">
+      {{ f.input('required_skills', 'Required skills', rv, errors, wide=True, placeholder='Python, SQL, Git', hint='Separate skills with commas.') }}
+      {{ f.input('preferred_skills', 'Preferred skills', rv, errors, wide=True, placeholder='Flask, Docker, AWS', hint='Separate skills with commas.') }}
+      {{ f.input('education', 'Education', rv, errors, placeholder='Bachelor in CS or related field') }}
+      {{ f.input('experience_years', 'Years of experience', rv, errors, type='number', extra='min="0" max="50"') }}
+      <div class="field">
+        <label>&nbsp;</label>
+        {% set remote = (request.form.get('remote_option') == 'on') if request.method == 'POST' else req.get('remote_option') %}
+        <label class="check"><input type="checkbox" name="remote_option" {{ 'checked' if remote }}> Remote option available</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{ 'Save changes' if job else 'Add job' }}</button>
+    <a class="btn" href="{{ url_for('job_detail', job_id=job.job_id) if job else url_for('jobs') }}">Cancel</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

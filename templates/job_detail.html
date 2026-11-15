@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import delete_button, skill_chips, status_pill %}
+{% block title %}{{ job.job_title }}{% endblock %}
+{% block content %}
+{% set req = job.requirements %}
+<div class="page-head">
+  <div>
+    <div class="crumbs"><a href="{{ url_for('jobs') }}">Jobs</a> / {{ job.job_title }}</div>
+    <h1>{{ job.job_title }}</h1>
+    <p><a href="{{ url_for('company_detail', company_id=job.company_id) }}">{{ job.company_name }}</a> · {{ job.job_type }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('add_application', job_id=job.job_id) }}">+ Log application</a>
+    <a class="btn" href="{{ url_for('edit_job', job_id=job.job_id) }}">Edit</a>
+    {{ delete_button(url_for('delete_job', job_id=job.job_id),
+         'Delete ' ~ job.job_title ~ '? This also deletes its ' ~ applications|length ~ ' application(s).') }}
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card card-pad">
+    <h2 style="margin-bottom:14px">Posting</h2>
+    <dl class="details">
+      <dt>Company</dt><dd><a href="{{ url_for('company_detail', company_id=job.company_id) }}">{{ job.company_name }}</a></dd>
+      <dt>Type</dt><dd>{{ job.job_type or '—' }}</dd>
+      <dt>Salary</dt><dd>{{ job|salary_range }}</dd>
+      <dt>Posted</dt><dd>{{ job.date_posted|nice_date }}</dd>
+      <dt>Posting URL</dt><dd>{% if job.job_url %}<a href="{{ job.job_url }}" target="_blank" rel="noopener">{{ job.job_url }}</a>{% else %}—{% endif %}</dd>
+    </dl>
+  </section>
+
+  <section class="card card-pad">
+    <h2 style="margin-bottom:14px">Requirements</h2>
+    <dl class="details">
+      <dt>Required skills</dt><dd>{{ skill_chips(req.get('required_skills')) }}</dd>
+      <dt>Preferred skills</dt><dd>{{ skill_chips(req.get('preferred_skills'), 'chip-soft') }}</dd>
+      <dt>Education</dt><dd>{{ req.get('education') or '—' }}</dd>
+      <dt>Experience</dt><dd>{{ (req.get('experience_years') ~ ' year' ~ ('' if req.get('experience_years') == 1 else 's')) if req.get('experience_years') is not none else '—' }}</dd>
+      <dt>Remote option</dt><dd>{{ 'Yes' if req.get('remote_option') else 'No' }}</dd>
+      <dt>Stored JSON</dt><dd><div class="json-block">{{ req|tojson(indent=2) if req else 'NULL' }}</div></dd>
+    </dl>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Your applications ({{ applications|length }})</h2></div>
+  {% if applications %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Applied</th><th>Status</th><th>Resume</th><th></th></tr></thead>
+    <tbody>
+    {% for a in applications %}
+      <tr>
+        <td class="nowrap">{{ a.application_date|nice_date }}</td>
+        <td>{{ status_pill(a.status) }}</td>
+        <td>{{ a.resume_version or '—' }}</td>
+        <td class="row-actions"><a class="btn btn-sm" href="{{ url_for('application_detail', application_id=a.application_id) }}">View</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">You haven't applied to this job yet.</p>{% endif %}
+</section>
+{% endblock %}

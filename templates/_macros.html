@@ -1,0 +1,52 @@
+{# Reusable form pieces. values = current form values (dict), errors = {field: message} #}
+
+{% macro val(values, name) -%}
+  {%- set v = values.get(name) if values else None -%}
+  {{- '' if v is none else v -}}
+{%- endmacro %}
+
+{% macro input(name, label, values, errors, type='text', required=False, hint=None, wide=False, placeholder='', extra='') %}
+<div class="field{{ ' wide' if wide }}{{ ' has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}{% if required %} <span class="req">*</span>{% endif %}</label>
+  <input type="{{ type }}" id="{{ name }}" name="{{ name }}" value="{{ val(values, name) }}"
+         placeholder="{{ placeholder }}" {{ 'required' if required }} {{ extra|safe }}>
+  {% if errors.get(name) %}<span class="error">{{ errors[name] }}</span>
+  {% elif hint %}<span class="hint">{{ hint }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro textarea(name, label, values, errors, hint=None, placeholder='') %}
+<div class="field wide{{ ' has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}</label>
+  <textarea id="{{ name }}" name="{{ name }}" placeholder="{{ placeholder }}">{{ val(values, name) }}</textarea>
+  {% if errors.get(name) %}<span class="error">{{ errors[name] }}</span>
+  {% elif hint %}<span class="hint">{{ hint }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro select(name, label, options, values, errors, required=False, placeholder=None) %}
+{# options = list of (value, text) pairs #}
+<div class="field{{ ' has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}{% if required %} <span class="req">*</span>{% endif %}</label>
+  <select id="{{ name }}" name="{{ name }}" {{ 'required' if required }}>
+    {% if placeholder %}<option value="">{{ placeholder }}</option>{% endif %}
+    {% for value, text in options %}
+      <option value="{{ value }}" {{ 'selected' if values and values.get(name)|string == value|string }}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  {% if errors.get(name) %}<span class="error">{{ errors[name] }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro delete_button(action, message, label='Delete', small=False) %}
+<form class="inline-form" method="post" action="{{ action }}" onsubmit='return confirm({{ message|tojson }})'>
+  <button type="submit" class="btn btn-danger{{ ' btn-sm' if small }}">{{ label }}</button>
+</form>
+{% endmacro %}
+
+{% macro status_pill(status) %}<span class="pill st-{{ status }}">{{ status }}</span>{% endmacro %}
+
+{% macro skill_chips(skills, css='') %}
+  {% if skills %}<span class="chips">{% for s in skills %}<span class="chip {{ css }}">{{ s }}</span>{% endfor %}</span>
+  {% else %}<span class="muted">None listed</span>{% endif %}
+{% endmacro %}

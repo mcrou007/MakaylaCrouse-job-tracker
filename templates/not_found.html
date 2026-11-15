@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Not found{% endblock %}
+{% block content %}
+<section class="card card-pad">
+  <h1>Page not found</h1>
+  <p class="muted" style="margin:8px 0 16px">That record doesn't exist. It may have been deleted.</p>
+  <a class="btn" href="{{ url_for('dashboard') }}">Back to the dashboard</a>
+</section>
+{% endblock %}

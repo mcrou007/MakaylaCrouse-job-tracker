@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import skill_chips %}
+{% block title %}Job Match{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Job Match</h1>
+    <p>Enter your skills to see which jobs fit you best. The match % is how many of a job's required skills you have.</p>
+  </div>
+</div>
+
+<section class="card card-pad">
+  <form class="match-form" method="get">
+    <input type="text" name="skills" value="{{ skills_text }}" placeholder="Python, SQL, Flask" aria-label="Your skills" autofocus>
+    <button class="btn btn-primary" type="submit">Find matches</button>
+  </form>
+  {% if skills %}<p class="hint" style="margin-top:10px"><span class="label-sm">Your skills:</span>{{ skills|join(', ') }}</p>{% endif %}
+</section>
+
+{% if results is not none %}
+<section class="card">
+  <div class="card-head">
+    <h2>Matching jobs ({{ results|length }})</h2>
+    {% if hidden %}<a href="{{ url_for('job_match', skills=skills_text, show='all') }}">Show {{ hidden }} job{{ '' if hidden == 1 else 's' }} with 0% match</a>
+    {% elif show_all %}<a href="{{ url_for('job_match', skills=skills_text) }}">Hide 0% matches</a>{% endif %}
+  </div>
+  {% if results %}
+  <ol class="match-list">
+    {% for r in results %}
+    <li class="match">
+      <span class="rank">{{ loop.index }}.</span>
+      <div class="match-body">
+        <h3><a href="{{ url_for('job_detail', job_id=r.job_id) }}">{{ r.job_title }}</a> <span class="muted">at {{ r.company_name }}</span></h3>
+        <div><span class="label-sm">Have:</span>{% if r.matched %}{{ skill_chips(r.matched, 'chip-hit') }}{% else %}<span class="muted">none of the required skills</span>{% endif %}</div>
+        {% if r.missing %}<div><span class="label-sm">Missing:</span>{{ skill_chips(r.missing, 'chip-miss') }}</div>{% endif %}
+        {% if r.preferred_matched %}<div><span class="label-sm">Bonus (preferred):</span>{{ skill_chips(r.preferred_matched, 'chip-soft') }}</div>{% endif %}
+      </div>
+      <div class="match-score">
+        <span class="score {{ 'score-100' if r.percent == 100 else ('score-high' if r.percent >= 50 else 'score-low') }}">{{ r.percent }}%</span>
+        <span class="meter"><span style="width: {{ r.percent }}%"></span></span>
+        <span class="hint">{{ r.matched|length }}/{{ r.total }} skills</span>
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="empty">None of the jobs need those skills. Try adding more skills, separated by commas.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}
