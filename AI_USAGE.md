@@ -24,6 +24,10 @@ Claude assisted in writing the code and setup steps for me to input. I set up ev
 - **Setting up the SQL.** Claude helped fix every error I ran into with MySQL, which helped with errors:
   - The Assignment 4 `'text' + CURDATE()` line fails in MySQL (you need `CONCAT`).
   - MySQL silently drops the automatic foreign key index on `jobs` when you add the composite index.
+  **Setting up files** It assisted in outlining files I needed and creating things such as:
+  - database.py
+  - style.css
+  - schema.sql
 - **Explaining errors.** It explained each error in plain language and gave the exact fix:
   - `python -m pip` instead of `pip`
   - the wrong password in `.env`
@@ -49,4 +53,4 @@ Claude assisted in writing the code and setup steps for me to input. I set up ev
 - Always test AI output. Several things in the course handouts looked fine but failed when actually run, so I can't assume code is right just because it looks right.
 - Make sure to input a commit message before pushing it through. I wasted some time confused why my changes weren't being pushed until I remember to input a message with the changes.
 - Never put passwords in code that goes to GitHub. Use environment variables or a `.env` file.
-- AI is a great tool that still must be tested and double checked for it's work. It is great at outlining and helping set up projects but it still needs guidance.
+- AI is a great tool that still must be tested and double checked for its work. It is great at outlining and helping set up projects but it still needs guidance.
