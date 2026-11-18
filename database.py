@@ -68,6 +68,18 @@ def parse_json(value):
         return None
 
 
+def parse_requirements(value):
+    """Always return requirements as a dict like {'required_skills': [...], ...}.
+    Older data stored it as a plain list of skills, e.g. ["Python", "SQL"],
+    so a list is treated as the required skills."""
+    data = parse_json(value)
+    if isinstance(data, list):
+        return {'required_skills': [str(s) for s in data]}
+    if isinstance(data, dict):
+        return data
+    return {}
+
+
 def _with_json(rows, column):
     for row in rows:
         row[column] = parse_json(row.get(column)) or {}
@@ -134,13 +146,16 @@ def get_jobs(company_id=None, job_type=None, search=None):
         sql += ' AND j.job_title LIKE %s'
         params.append(f'%{search}%')
     sql += ' ORDER BY j.date_posted DESC, j.job_title'
-    return _with_json(query(sql, tuple(params)), 'requirements')
+    rows = query(sql, tuple(params))
+    for row in rows:
+        row['requirements'] = parse_requirements(row.get('requirements'))
+    return rows
 
 
 def get_job(job_id):
     row = query_one(JOB_SELECT + ' WHERE j.job_id = %s', (job_id,))
     if row:
-        row['requirements'] = parse_json(row['requirements']) or {}
+        row['requirements'] = parse_requirements(row['requirements'])
     return row
 
 
