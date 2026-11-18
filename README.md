@@ -146,4 +146,4 @@ Example: with `Python, SQL, Flask`, **Software Developer** (needs Python, SQL, G
 
 ## Demo video
 
-A video of the app running (browser, Flask server, and MySQL Workbench) is in this repository: `demo_video.mp4`
+[▶ Watch the demo video](demo_video.mp4): the app running in the browser, the Flask server, and MySQL Workbench.
